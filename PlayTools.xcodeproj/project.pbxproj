@@ -76,6 +76,7 @@
 		AA719872287A81A000623C15 /* UITouch+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = AA719844287A81A000623C15 /* UITouch+Private.h */; };
 		AA818CB9287ABFB1000BEE9D /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA818CB8287ABFB1000BEE9D /* IOKit.framework */; };
 		AB7DA47529B85BFB0034ACB2 /* PlayShadow.m in Sources */ = {isa = PBXBuildFile; fileRef = AB7DA47429B85BFB0034ACB2 /* PlayShadow.m */; };
+		F511D9CB8F68D9D9B0341314 /* AudioSession.m in Sources */ = {isa = PBXBuildFile; fileRef = A043BAE1603803A839C0CB52 /* AudioSession.m */; };
 		AB7DA47729B8A78B0034ACB2 /* PlayShadow.h in Headers */ = {isa = PBXBuildFile; fileRef = AB7DA47629B8A78B0034ACB2 /* PlayShadow.h */; };
 		ABCECEE629750BA600746595 /* PlayedApple.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCECEE529750BA600746595 /* PlayedApple.swift */; };
 		B127172528817C040025112B /* DiscordIPC.swift in Sources */ = {isa = PBXBuildFile; fileRef = B127172428817C040025112B /* DiscordIPC.swift */; };
@@ -175,6 +176,7 @@
 		AA818CB8287ABFB1000BEE9D /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/System/Library/Frameworks/IOKit.framework; sourceTree = DEVELOPER_DIR; };
 		AA818CBA287ABFD5000BEE9D /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/System/iOSSupport/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		AB7DA47429B85BFB0034ACB2 /* PlayShadow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PlayShadow.m; sourceTree = "<group>"; };
+		A043BAE1603803A839C0CB52 /* AudioSession.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AudioSession.m; sourceTree = "<group>"; };
 		AB7DA47629B8A78B0034ACB2 /* PlayShadow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PlayShadow.h; sourceTree = "<group>"; };
 		ABCECEE529750BA600746595 /* PlayedApple.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayedApple.swift; sourceTree = "<group>"; };
 		B127172428817C040025112B /* DiscordIPC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscordIPC.swift; sourceTree = "<group>"; };
@@ -536,6 +538,7 @@
 				ABCECEE529750BA600746595 /* PlayedApple.swift */,
 				EEB248582B81D074000C230A /* PlayedAppleDB.swift */,
 				AB7DA47429B85BFB0034ACB2 /* PlayShadow.m */,
+				A043BAE1603803A839C0CB52 /* AudioSession.m */,
 				AB7DA47629B8A78B0034ACB2 /* PlayShadow.h */,
 			);
 			path = MysticRunes;
@@ -768,6 +771,7 @@
 				AA71985F287A81A000623C15 /* IOHIDEvent+KIF.m in Sources */,
 				B1E8CF8A28BBE2AB004340D3 /* Keymapping.swift in Sources */,
 				AB7DA47529B85BFB0034ACB2 /* PlayShadow.m in Sources */,
+				F511D9CB8F68D9D9B0341314 /* AudioSession.m in Sources */,
 				9562D1662AB5049B002C329D /* KeyboardEventAdapter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
