@@ -75,6 +75,8 @@
 		AA719870287A81A000623C15 /* UIEvent+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = AA719842287A81A000623C15 /* UIEvent+Private.h */; };
 		AA719872287A81A000623C15 /* UITouch+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = AA719844287A81A000623C15 /* UITouch+Private.h */; };
 		AA818CB9287ABFB1000BEE9D /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA818CB8287ABFB1000BEE9D /* IOKit.framework */; };
+		5C89C6C02DCF40599C3F6729 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 18E885F53A624460B77B3A0A /* CoreAudio.framework */; };
+		34F784D829994E819DFB1E38 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5527C6DCBB14499CA25542CD /* AudioToolbox.framework */; };
 		AB7DA47529B85BFB0034ACB2 /* PlayShadow.m in Sources */ = {isa = PBXBuildFile; fileRef = AB7DA47429B85BFB0034ACB2 /* PlayShadow.m */; };
 		F511D9CB8F68D9D9B0341314 /* AudioSession.m in Sources */ = {isa = PBXBuildFile; fileRef = A043BAE1603803A839C0CB52 /* AudioSession.m */; };
 		AB7DA47729B8A78B0034ACB2 /* PlayShadow.h in Headers */ = {isa = PBXBuildFile; fileRef = AB7DA47629B8A78B0034ACB2 /* PlayShadow.h */; };
@@ -174,6 +176,8 @@
 		AA719842287A81A000623C15 /* UIEvent+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIEvent+Private.h"; sourceTree = "<group>"; };
 		AA719844287A81A000623C15 /* UITouch+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UITouch+Private.h"; sourceTree = "<group>"; };
 		AA818CB8287ABFB1000BEE9D /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/System/Library/Frameworks/IOKit.framework; sourceTree = DEVELOPER_DIR; };
+		18E885F53A624460B77B3A0A /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/System/Library/Frameworks/CoreAudio.framework; sourceTree = DEVELOPER_DIR; };
+		5527C6DCBB14499CA25542CD /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/System/Library/Frameworks/AudioToolbox.framework; sourceTree = DEVELOPER_DIR; };
 		AA818CBA287ABFD5000BEE9D /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.3.sdk/System/iOSSupport/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		AB7DA47429B85BFB0034ACB2 /* PlayShadow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PlayShadow.m; sourceTree = "<group>"; };
 		A043BAE1603803A839C0CB52 /* AudioSession.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AudioSession.m; sourceTree = "<group>"; };
@@ -203,6 +207,8 @@
 				B6D774FF2ACFC3D900C0D9D8 /* SwordRPC in Frameworks */,
 				6E84A14528D0F94E00BF7495 /* UIKit.framework in Frameworks */,
 				AA818CB9287ABFB1000BEE9D /* IOKit.framework in Frameworks */,
+				5C89C6C02DCF40599C3F6729 /* CoreAudio.framework in Frameworks */,
+				34F784D829994E819DFB1E38 /* AudioToolbox.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -527,6 +533,8 @@
 			children = (
 				AA818CBA287ABFD5000BEE9D /* UIKit.framework */,
 				AA818CB8287ABFB1000BEE9D /* IOKit.framework */,
+				18E885F53A624460B77B3A0A /* CoreAudio.framework */,
+				5527C6DCBB14499CA25542CD /* AudioToolbox.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";

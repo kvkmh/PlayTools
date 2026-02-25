@@ -23,55 +23,118 @@
 
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
-#import <CoreAudio/CoreAudio.h>
-#import <AudioToolbox/AudioServices.h>
+#import <AudioToolbox/AudioToolbox.h>
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
+#import <dlfcn.h>
 
 #import "PlayShadow.h"                      // NSObject(ShadowSwizzle) category
 #import <PlayTools/PlayTools-Swift.h>       // PlaySettings, PlayInfo
 
 // ---------------------------------------------------------------------------
-// CoreAudio HAL helper — real macOS system output volume
+// macOS CoreAudio HAL — accessed via dlsym at runtime.
+//
+// Why dlsym?
+//   PlayTools builds against the iOS SDK where <CoreAudio/CoreAudio.h> and
+//   AudioHardwareService headers are absent (their .h files exist but are
+//   empty stubs). However, this dylib runs on macOS inside the iOSSupport
+//   process, where CoreAudio.framework is always present. We look up the
+//   symbols at runtime so the build succeeds against the iOS SDK, but the
+//   calls work at runtime on macOS.
 // ---------------------------------------------------------------------------
 
-static AudioObjectID PT_defaultOutputDevice(void) {
-    AudioObjectID deviceID = kAudioObjectUnknown;
-    AudioObjectPropertyAddress addr = {
-        kAudioHardwarePropertyDefaultOutputDevice,
-        kAudioObjectPropertyScopeGlobal,
-        kAudioObjectPropertyElementMain
+// Minimal type repro — matches CoreAudio/AudioHardwareService.h on macOS
+typedef UInt32 PT_AudioObjectID;
+typedef UInt32 PT_AudioDeviceID;
+
+typedef struct {
+    UInt32 mSelector;
+    UInt32 mScope;
+    UInt32 mElement;
+} PT_AudioObjectPropertyAddress;
+
+// CoreAudio constants (numeric values are stable across all macOS versions)
+#define PT_kAudioObjectSystemObject              ((PT_AudioObjectID)1)
+#define PT_kAudioObjectUnknown                   ((PT_AudioObjectID)0)
+#define PT_kAudioHardwarePropertyDefaultOutputDevice 0x644F7574  // 'dOut'
+#define PT_kAudioHardwareServiceDeviceProperty_VirtualMainVolume 0x766D7677  // 'vmvw' (deprecated but still works)
+#define PT_kAudioDevicePropertyTransportType     0x7472616E  // 'tran'
+#define PT_kAudioObjectPropertyScopeGlobal       0x676C6F62  // 'glob'
+#define PT_kAudioObjectPropertyScopeOutput       0x6F757470  // 'outp'
+#define PT_kAudioObjectPropertyElementMain       0
+
+// Transport type constants
+#define PT_kAudioDeviceTransportTypeBuiltIn      0x626C746E  // 'bltn'
+#define PT_kAudioDeviceTransportTypeBluetooth    0x626C7565  // 'blue'
+#define PT_kAudioDeviceTransportTypeBluetoothLE  0x626C6565  // 'blee'
+#define PT_kAudioDeviceTransportTypeUSB          0x75736220  // 'usb '
+
+typedef OSStatus (*PT_AudioHardwareServiceGetPropertyData_t)(
+    PT_AudioObjectID, const PT_AudioObjectPropertyAddress *,
+    UInt32, const void *, UInt32 *, void *);
+
+// Lazily resolved function pointer — looked up once from CoreAudio.framework
+static PT_AudioHardwareServiceGetPropertyData_t PT_AHSGetPropertyData(void) {
+    static PT_AudioHardwareServiceGetPropertyData_t fn = NULL;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        void *lib = dlopen("/System/Library/Frameworks/AudioToolbox.framework/AudioToolbox", RTLD_LAZY | RTLD_NOLOAD);
+        if (!lib) lib = dlopen("/System/Library/Frameworks/AudioToolbox.framework/AudioToolbox", RTLD_LAZY);
+        if (lib) fn = (PT_AudioHardwareServiceGetPropertyData_t)
+                        dlsym(lib, "AudioHardwareServiceGetPropertyData");
+        if (!fn) NSLog(@"[PlayTools/AudioSession] AudioHardwareServiceGetPropertyData not found");
+    });
+    return fn;
+}
+
+static PT_AudioDeviceID PT_defaultOutputDevice(void) {
+    PT_AudioHardwareServiceGetPropertyData_t fn = PT_AHSGetPropertyData();
+    if (!fn) return PT_kAudioObjectUnknown;
+
+    PT_AudioDeviceID deviceID = PT_kAudioObjectUnknown;
+    UInt32 size = sizeof(PT_AudioDeviceID);
+    PT_AudioObjectPropertyAddress addr = {
+        PT_kAudioHardwarePropertyDefaultOutputDevice,
+        PT_kAudioObjectPropertyScopeGlobal,
+        PT_kAudioObjectPropertyElementMain
     };
-    UInt32 size = sizeof(AudioObjectID);
-    AudioObjectGetPropertyData(kAudioObjectSystemObject, &addr, 0, NULL, &size, &deviceID);
+    fn(PT_kAudioObjectSystemObject, &addr, 0, NULL, &size, &deviceID);
     return deviceID;
 }
 
 static float PT_systemOutputVolume(void) {
-    AudioObjectID device = PT_defaultOutputDevice();
-    if (device == kAudioObjectUnknown) return 1.0f;
+    PT_AudioHardwareServiceGetPropertyData_t fn = PT_AHSGetPropertyData();
+    if (!fn) return 1.0f;
+
+    PT_AudioDeviceID device = PT_defaultOutputDevice();
+    if (device == PT_kAudioObjectUnknown) return 1.0f;
+
     Float32 volume = 1.0f;
-    AudioObjectPropertyAddress addr = {
-        kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
-        kAudioObjectPropertyScopeOutput,
-        kAudioObjectPropertyElementMain
-    };
     UInt32 size = sizeof(Float32);
-    OSStatus err = AudioObjectGetPropertyData(device, &addr, 0, NULL, &size, &volume);
+    PT_AudioObjectPropertyAddress addr = {
+        PT_kAudioHardwareServiceDeviceProperty_VirtualMainVolume,
+        PT_kAudioObjectPropertyScopeOutput,
+        PT_kAudioObjectPropertyElementMain
+    };
+    OSStatus err = fn(device, &addr, 0, NULL, &size, &volume);
     return (err == noErr) ? (float)volume : 1.0f;
 }
 
 static UInt32 PT_defaultOutputTransportType(void) {
-    AudioObjectID device = PT_defaultOutputDevice();
-    if (device == kAudioObjectUnknown) return kAudioDeviceTransportTypeBuiltIn;
-    UInt32 type = kAudioDeviceTransportTypeBuiltIn;
-    AudioObjectPropertyAddress addr = {
-        kAudioDevicePropertyTransportType,
-        kAudioObjectPropertyScopeGlobal,
-        kAudioObjectPropertyElementMain
-    };
+    PT_AudioHardwareServiceGetPropertyData_t fn = PT_AHSGetPropertyData();
+    if (!fn) return PT_kAudioDeviceTransportTypeBuiltIn;
+
+    PT_AudioDeviceID device = PT_defaultOutputDevice();
+    if (device == PT_kAudioObjectUnknown) return PT_kAudioDeviceTransportTypeBuiltIn;
+
+    UInt32 type = PT_kAudioDeviceTransportTypeBuiltIn;
     UInt32 size = sizeof(UInt32);
-    AudioObjectGetPropertyData(device, &addr, 0, NULL, &size, &type);
+    PT_AudioObjectPropertyAddress addr = {
+        PT_kAudioDevicePropertyTransportType,
+        PT_kAudioObjectPropertyScopeGlobal,
+        PT_kAudioObjectPropertyElementMain
+    };
+    fn(device, &addr, 0, NULL, &size, &type);
     return type;
 }
 
@@ -176,19 +239,14 @@ static UInt32 PT_defaultOutputTransportType(void) {
     UInt32 transport = PT_defaultOutputTransportType();
 
     AVAudioSessionPortType portType;
-    switch (transport) {
-        case kAudioDeviceTransportTypeUSB:
-        case kAudioDeviceTransportTypeThunderbolt:
-            portType = AVAudioSessionPortUSBAudio;
-            break;
-        case kAudioDeviceTransportTypeBluetooth:
-        case kAudioDeviceTransportTypeBluetoothLE:
-            portType = AVAudioSessionPortBluetoothA2DP;
-            break;
-        default:
-            // Built-in, HDMI, DisplayPort, etc. — treat as speaker.
-            portType = AVAudioSessionPortBuiltInSpeaker;
-            break;
+    if (transport == PT_kAudioDeviceTransportTypeUSB) {
+        portType = AVAudioSessionPortUSBAudio;
+    } else if (transport == PT_kAudioDeviceTransportTypeBluetooth ||
+               transport == PT_kAudioDeviceTransportTypeBluetoothLE) {
+        portType = AVAudioSessionPortBluetoothA2DP;
+    } else {
+        // Built-in, HDMI, DisplayPort, Thunderbolt etc. — treat as speaker.
+        portType = AVAudioSessionPortBuiltInSpeaker;
     }
 
     // AVAudioSessionPortDescription and RouteDescription have no public inits.
