@@ -279,6 +279,11 @@ __attribute__((visibility("hidden")))
         [(cls) swizzleInstanceMethod:(orig) withMethod:(repl)]; \
     } while(0)
 
+// AVAudioSession selectors are not declared on NSObject; suppress the
+// -Wundeclared-selector diagnostic for this block only.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
+
     // Fix 1 — strip duckOthers
     PT_INSTALL(avs,
         @selector(setCategory:options:error:),
@@ -309,6 +314,8 @@ __attribute__((visibility("hidden")))
     PT_INSTALL(nc,
         @selector(postNotificationName:object:),
         @selector(pt_postNotificationName:object:));
+
+#pragma clang diagnostic pop
 
 #undef PT_INSTALL
 
